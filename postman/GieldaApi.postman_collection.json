@@ -1,0 +1,148 @@
+{
+  "info": {
+    "name": "GieldaApi",
+    "description": "Kolekcja do lokalnego API. Najpierw uruchom: dotnet run --project src/GieldaApi",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5080" },
+    { "key": "ticker", "value": "PKO" }
+  ],
+  "item": [
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "Lista spółek",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/companies" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.test('Ma stronicowanie', () => pm.expect(pm.response.json()).to.have.property('totalCount'));"
+          ] } }]
+        },
+        {
+          "name": "Lista – filtr po sektorze",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/companies?sector=Banki" }
+        },
+        {
+          "name": "Lista – stronicowanie",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/companies?page=2&pageSize=3" }
+        },
+        {
+          "name": "Lista – za duży pageSize (400)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/companies?pageSize=500" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));"
+          ] } }]
+        },
+        {
+          "name": "Szczegóły spółki",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/companies/{{ticker}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));"
+          ] } }]
+        },
+        {
+          "name": "Nieistniejąca spółka (404)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/companies/XYZ" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+          ] } }]
+        },
+        {
+          "name": "Dodaj spółkę",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/companies",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ticker\": \"ALE\",\n  \"name\": \"Allegro\",\n  \"sector\": \"Handel\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));",
+            "pm.test('Nagłówek Location', () => pm.response.to.have.header('Location'));"
+          ] } }]
+        },
+        {
+          "name": "Dodaj spółkę – duplikat (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/companies",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ticker\": \"PKO\",\n  \"name\": \"Duplikat\",\n  \"sector\": \"Banki\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('409 Conflict', () => pm.response.to.have.status(409));"
+          ] } }]
+        },
+        {
+          "name": "Dodaj spółkę – błędne dane (400)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/companies",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ticker\": \"x\",\n  \"name\": \"A\",\n  \"sector\": \"Banki\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('400 Bad Request', () => pm.response.to.have.status(400));"
+          ] } }]
+        },
+        {
+          "name": "Zmień spółkę",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/companies/ALE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Allegro.eu\",\n  \"sector\": \"E-commerce\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('204 No Content', () => pm.response.to.have.status(204));"
+          ] } }]
+        },
+        {
+          "name": "Usuń spółkę",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/companies/ALE" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('204 No Content', () => pm.response.to.have.status(204));"
+          ] } }]
+        }
+      ]
+    },
+    {
+      "name": "Quotes",
+      "item": [
+        {
+          "name": "Notowania spółki",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/companies/{{ticker}}/quotes" }
+        },
+        {
+          "name": "Notowania – zakres dat",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/companies/{{ticker}}/quotes?from=2026-10-02&to=2026-10-31" }
+        },
+        {
+          "name": "Dodaj notowanie",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/companies/{{ticker}}/quotes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"date\": \"2026-10-06\",\n  \"close\": 63.80,\n  \"volume\": 4200000\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('201 Created', () => pm.response.to.have.status(201));"
+          ] } }]
+        },
+        {
+          "name": "Dodaj notowanie – ten sam dzień (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/companies/{{ticker}}/quotes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"date\": \"2026-10-01\",\n  \"close\": 60.00,\n  \"volume\": 1000\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('409 Conflict', () => pm.response.to.have.status(409));"
+          ] } }]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+
+# lokalna baza SQLite
+*.db
+*.db-shm
+*.db-wal
