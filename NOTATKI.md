@@ -10,3 +10,7 @@
 4. Data/Configurations/CompanyConfiguration.cs - `builder.Property(c => c.Ticker).HasMaxLength(10).IsRequired();` i `builder.HasIndex(c => c.Ticker).IsUnique();`.
 5. Kolejność wywołania Kontroler -> Serwis -> DbContext -> SQLite
 Kontroler potrzebuje serwisu, serwis potrzebuje kontekstu bazy - wtedy odpalane jest `OnModelCreating`, które tworzy model bazy danych na podstawie encji i ich konfiguracji. Następnie tworzony jest serwis z kontekstem bazy i później kontroler z konteksem serwisu. Model jest stworzony na początku i jest przechowywany w pamięci do końca zycia aplikacji. Później tworzone są juz tylko instancje klas przy kazdym ządaniu, ale model jest ten sam.
+
+
+dotnet-tools.json - to plik, który zawiera zewnętrzne paczki, niepotrzebne do działania aplikacji, a bardziej dla developera, tzn. prettier, ef do migracji, itd...
+GieldaApi.csproj - to plik, który jest czytany przy starcie aplikacji, tutaj są wszystkie zalezności potrzebne do kompilacji i działania projektu.
