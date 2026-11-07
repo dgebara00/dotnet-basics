@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GieldaApi.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261106152734_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20261107153212_InitialSeed")]
+    partial class InitialSeed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
