@@ -14,3 +14,10 @@ Kontroler potrzebuje serwisu, serwis potrzebuje kontekstu bazy - wtedy odpalane 
 
 dotnet-tools.json - to plik, który zawiera zewnętrzne paczki, niepotrzebne do działania aplikacji, a bardziej dla developera, tzn. prettier, ef do migracji, itd...
 GieldaApi.csproj - to plik, który jest czytany przy starcie aplikacji, tutaj są wszystkie zalezności potrzebne do kompilacji i działania projektu.
+
+## Zadanie 2
+1. CompaniesController –> GetByTicker - ASP.NET wie dokładnie, ze to tę metodę ma wywołać po linijce `[HttpGet("{ticker}", Name = nameof(GetByTicker))]` gdzie mapujemy metodę do requesta typu 'GET' z parametrem `ticker` i następnie nadajemy na ten endpoint unikalną nazwę, mozemy to wykorzystać np. przy `POST` kiedy zwracamy nagłówek Location w headerze.
+2. GetByTickerAsync.
+3. Zadziała, `var normalized = Normalize(ticker);` metoda Normalize powoduje, ze zawsze zamieniamy ticker na duze litery i wycinamy białe znaki. Dodatkowo pod spodem działa `ToUpperInvariant` metoda, która działa wg. reguł języka angielskiego, co istotne, zwykłe `ToUpper` mogłoby spowodować rózny zapis w zalezności od regionu uzytkowania aplikacji. Przy bazach danych powinno się korzystać z tej odmiany.
+4. Najpierw szukamy w tabeli Companies po znormalizowanym tickerze i bierzemy FirstOrDefaultAsync, jako, ze nie znalazło to default dla klasy to null. Następnie mamy operator null coalescing i rzucamy błąd dokładnie taki jaki otrzymujemy w response `?? throw new NotFoundException($"Spółka {normalized} nie istnieje.");`, później ten błąd jest wyłapany przez GlobalExceptionHandler, który jest zarejestrowany w Program.cs i na podstawie szczegółów błędu ustawia odpowiedni response.
+5. Nie ma na to najmniejszej potrzeby, po to korzystamy z FirstOrDefault i uzywamy `??`, aby to ładnie obsłuzyć właściwymi błędami, które złapie GlobalExceptionHandler i zmapuje odpowiednio. To wszystko zalezy oczywiście od sytuacji i czasami mogą trafić się przypadki, które chcemy inaczej obsłuzyć.
