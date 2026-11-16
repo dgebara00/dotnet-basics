@@ -27,3 +27,10 @@ GieldaApi.csproj - to plik, który jest czytany przy starcie aplikacji, tutaj s�
 2 b. `.Where(c => c.Sector == ...)` to `WHERE "c"."Sector" = @query_Sector` a `.Skip(...).Take(...)` to `LIMIT @p0 OFFSET @p`
 2 c. `.Select(c => new CompanyResponse(c.Ticker, c.Name, c.Sector, c.CreatedAtUtc))` Zapytanie jest mapowane na CompanyResponse DTO przez co zwraca tylko te kolumny, które potrzebuje kontroler.
 2 d. Tak samo jak poprzedni endpoint, tutaj tez dwa razy robimy zapytanie, najpierw o spółkę, która jest koniecznym warunkiem do spełnienia, a następnie o najświezsze notowanie, które moze być nullem.
+
+## Zadanie 4
+1. Encje (Companies, Quotes), __EFMigrationsHistory, __EFMigrationsLock
+2. W __EFMigrationsLock są wszystkie nałozone migracje na bazę danych
+3. Close i Date są typu TEXT, wynika to z tego, ze SQLlite po prostu nie wspiera wszystkich typów np. double, decimal, itd... Jednakze po stronie kodu jest pewność, ze typy się będą zgadzały, bo EF to konwertuje pod spodem. Dzięki polu Text zachowamy precyzję. Problemy mogłyby się pojawić jeśli chcielibyśmy bezpośrednio na bazie pracować, wtedy np. sortowanie, albo agregacja będzie działać błędnie.
+4. Mamy klucz obcy CompanyId, na podstawie którego pózniej mozna zrobić joina po id spółki. 
+5. IX_Companies_Ticker - ten indeks pilnuje, ze spółka w companies ma być unikalna. X_Quotes_CompanyId_Date - odpowiada za unikalne notowanie dla danej spółki - max 1 na dzień. Przy próbie zrobienia seed'a do bazy danych z nieprawidłowymi danymi dostaniemy błędy typu `UNIQUE constraint failed: Quotes.CompanyId, Quotes.Date`
